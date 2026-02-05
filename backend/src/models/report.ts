@@ -1,10 +1,21 @@
 export type ReportType = 'SALLES_B' | 'BU';
 
+export type SectionKind = 'text' | 'list' | 'number' | 'numberList' | 'roomChecklist';
+
+export interface RoomChecklistConfig {
+  rooms: string[];
+  checkItems: { key: string; label: string }[];
+}
+
 export interface ReportSectionDefinition {
   key: string;
   label: string;
-  kind: 'text' | 'list';
+  kind: SectionKind;
   required: boolean;
+  /** For numberList: display format, e.g. "BUPF{n}" or "Mat {n}" */
+  format?: string;
+  /** For roomChecklist: room names + checklist items */
+  roomConfig?: RoomChecklistConfig;
 }
 
 export interface ReportTemplate {
@@ -12,6 +23,13 @@ export interface ReportTemplate {
   type: ReportType;
   version: number;
   sections: ReportSectionDefinition[];
+}
+
+/** Per-room data for Salles en B */
+export interface RoomData {
+  visited: boolean;
+  checks: Record<string, boolean>;
+  notes: string;
 }
 
 export interface IncidentItem {

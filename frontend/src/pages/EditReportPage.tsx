@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReportForm from '../components/ReportForm';
 import type { SectionDef } from '../components/ReportForm';
-import IncidentListEditor from '../components/IncidentListEditor';
-import type { IncidentItem } from '../components/IncidentListEditor';
 import ReportPreview from '../components/ReportPreview';
 import { reportsApi, type Report, type ReportTemplate, type RenderedReport } from '../services/reportsApi';
 import { showToast } from '../components/Toast';
@@ -15,7 +13,6 @@ export default function EditReportPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [metadata, setMetadata] = useState({ reportDate: '', shiftLabel: '', authorName: '' });
   const [sections, setSections] = useState<Record<string, unknown>>({});
-  const [incidents, setIncidents] = useState<IncidentItem[]>([]);
   const [preview, setPreview] = useState<RenderedReport | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -32,9 +29,7 @@ export default function EditReportPage() {
           shiftLabel: r.metadata.shiftLabel || '',
           authorName: r.metadata.authorName || '',
         });
-        const { incidents: inc, ...rest } = r.sections as Record<string, unknown> & { incidents?: IncidentItem[] };
-        setSections(rest);
-        setIncidents((inc as IncidentItem[]) || []);
+        setSections(r.sections || {});
       })
       .catch(() => setError('Rapport introuvable'))
       .finally(() => setLoading(false));
@@ -47,8 +42,7 @@ export default function EditReportPage() {
     setError('');
     setSaving(true);
     try {
-      const allSections = { ...sections, incidents };
-      await reportsApi.update(reportId, { metadata, sections: allSections });
+      await reportsApi.update(reportId, { metadata, sections });
       const rendered = await reportsApi.render(reportId);
       setPreview(rendered);
       showToast('Rapport mis à jour !');
@@ -100,13 +94,6 @@ export default function EditReportPage() {
           onChange={(key, value) => setSections((prev) => ({ ...prev, [key]: value }))}
           metadata={metadata}
           onMetadataChange={(field, value) => setMetadata((prev) => ({ ...prev, [field]: value }))}
-          incidentEditor={
-            <IncidentListEditor
-              items={incidents}
-              onChange={setIncidents}
-              locationLabel={report.type === 'SALLES_B' ? 'Lieu' : 'Zone'}
-            />
-          }
         />
       )}
 
@@ -122,3 +109,4 @@ export default function EditReportPage() {
     </div>
   );
 }
+

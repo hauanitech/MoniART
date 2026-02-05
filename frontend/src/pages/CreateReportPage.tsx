@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import ReportTypePicker from '../components/ReportTypePicker';
 import ReportForm from '../components/ReportForm';
 import type { SectionDef } from '../components/ReportForm';
-import IncidentListEditor from '../components/IncidentListEditor';
-import type { IncidentItem } from '../components/IncidentListEditor';
 import ReportPreview from '../components/ReportPreview';
 import { reportsApi, type ReportTemplate, type RenderedReport } from '../services/reportsApi';
 
@@ -16,7 +14,6 @@ export default function CreateReportPage() {
   const [selectedType, setSelectedType] = useState<ReportTypeChoice | null>(null);
   const [metadata, setMetadata] = useState({ reportDate: new Date().toISOString().slice(0, 10), shiftLabel: '', authorName: '' });
   const [sections, setSections] = useState<Record<string, unknown>>({});
-  const [incidents, setIncidents] = useState<IncidentItem[]>([]);
   const [preview, setPreview] = useState<RenderedReport | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -40,13 +37,11 @@ export default function CreateReportPage() {
     setError('');
     setSaving(true);
     try {
-      const allSections = { ...sections, incidents };
       const report = await reportsApi.create({
         type: selectedType,
         metadata,
-        sections: allSections,
+        sections,
       });
-      // Render
       const rendered = await reportsApi.render(report.id);
       setPreview(rendered);
     } catch (e: any) {
@@ -59,7 +54,6 @@ export default function CreateReportPage() {
   const handleReset = () => {
     setSelectedType(null);
     setSections({});
-    setIncidents([]);
     setPreview(null);
     setMetadata({ reportDate: new Date().toISOString().slice(0, 10), shiftLabel: '', authorName: '' });
   };
@@ -110,13 +104,6 @@ export default function CreateReportPage() {
           onChange={handleSectionChange}
           metadata={metadata}
           onMetadataChange={handleMetadataChange}
-          incidentEditor={
-            <IncidentListEditor
-              items={incidents}
-              onChange={setIncidents}
-              locationLabel={selectedType === 'SALLES_B' ? 'Lieu' : 'Zone'}
-            />
-          }
         />
       )}
 
@@ -132,3 +119,4 @@ export default function CreateReportPage() {
     </div>
   );
 }
+
