@@ -22,7 +22,11 @@ function renderRoomChecklist(roomsData: Record<string, RoomData>, sec: ReportSec
     const issues: string[] = [];
     if (room.checks) {
       for (const item of config.checkItems) {
-        if (room.checks[item.key]) {
+        const val = room.checks[item.key];
+        if (item.inputType === 'number') {
+          const num = typeof val === 'number' ? val : 0;
+          if (num > 0) issues.push(`${item.label}: ${num}`);
+        } else if (val) {
           issues.push(item.label);
         }
       }

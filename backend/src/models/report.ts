@@ -4,7 +4,7 @@ export type SectionKind = 'text' | 'list' | 'number' | 'numberList' | 'roomCheck
 
 export interface RoomChecklistConfig {
   rooms: string[];
-  checkItems: { key: string; label: string }[];
+  checkItems: { key: string; label: string; inputType?: 'boolean' | 'number' }[];
 }
 
 export interface ReportSectionDefinition {
@@ -28,7 +28,7 @@ export interface ReportTemplate {
 /** Per-room data for Salles en B */
 export interface RoomData {
   visited: boolean;
-  checks: Record<string, boolean>;
+  checks: Record<string, boolean | number>;
   notes: string;
 }
 

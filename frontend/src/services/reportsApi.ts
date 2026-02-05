@@ -12,7 +12,7 @@ export interface ReportTemplate {
     format?: string;
     roomConfig?: {
       rooms: string[];
-      checkItems: { key: string; label: string }[];
+      checkItems: { key: string; label: string; inputType?: 'boolean' | 'number' }[];
     };
   }[];
 }

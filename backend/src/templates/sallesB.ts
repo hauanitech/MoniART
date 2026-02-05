@@ -15,10 +15,10 @@ export const sallesBTemplate: ReportTemplate = {
       roomConfig: {
         rooms: ['B2-1', 'B2-2', 'B2-3', 'B2-4', 'B1-2', 'B1-3'],
         checkItems: [
-          { key: 'f1', label: 'F1' },
-          { key: 'cablesEcran', label: 'Cables Ecran Débranchée' },
-          { key: 'cablesReseau', label: 'Cables Réseau Débranchée' },
-          { key: 'cablesClientLeger', label: 'Cables Client Léger Débranchée' },
+          { key: 'f1', label: 'F1', inputType: 'number' },
+          { key: 'cablesEcran', label: 'Cables Ecran Débranchée', inputType: 'number' },
+          { key: 'cablesReseau', label: 'Cables Réseau Débranchée', inputType: 'number' },
+          { key: 'cablesClientLeger', label: 'Cables Client Léger Débranchée', inputType: 'number' },
           { key: 'porteMalFermee', label: 'Porte mal fermée' },
           { key: 'climAllumee', label: 'Climatisation allumée' },
           { key: 'projecteurAllume', label: 'Projecteur Allumé' },
