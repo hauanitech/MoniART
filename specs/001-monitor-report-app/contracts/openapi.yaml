@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+  title: Monitor Report App API
+  version: 0.1.0
+  description: API pour créer, stocker, rendre et préparer l'envoi de rapports (sans authentification).
+
+servers:
+  - url: http://localhost:3001
+
+tags:
+  - name: Templates
+  - name: Reports
+  - name: Email
+
+paths:
+  /api/templates:
+    get:
+      tags: [Templates]
+      summary: Lister les templates de rapports
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Liste des templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportTemplate'
+
+  /api/reports:
+    get:
+      tags: [Reports]
+      summary: Lister les rapports enregistrés
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ReportType'
+      responses:
+        '200':
+          description: Liste des rapports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportSummary'
+    post:
+      tags: [Reports]
+      summary: Créer un rapport
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCreateRequest'
+      responses:
+        '201':
+          description: Rapport créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /api/reports/{reportId}:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - name: reportId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Reports]
+      summary: Lire un rapport
+      responses:
+        '200':
+          description: Rapport
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          description: Non trouvé
+    put:
+      tags: [Reports]
+      summary: Mettre à jour un rapport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportUpdateRequest'
+      responses:
+        '200':
+          description: Rapport mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          description: Non trouvé
+    delete:
+      tags: [Reports]
+      summary: Supprimer un rapport
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          description: Non trouvé
+
+  /api/reports/{reportId}/render:
+    post:
+      tags: [Reports]
+      summary: Générer le rendu texte d'un rapport
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rendu texte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderedReport'
+        '404':
+          description: Non trouvé
+
+  /api/reports/{reportId}/email/prepare:
+    post:
+      tags: [Email]
+      summary: Préparer un email (objet + corps) pour un rapport
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailPrepareRequest'
+      responses:
+        '200':
+          description: Email préparé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreparedEmail'
+        '404':
+          description: Non trouvé
+
+components:
+  parameters:
+    WorkspaceId:
+      name: X-Workspace-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Identifiant de workspace généré côté client (sans authentification).
+
+  schemas:
+    ReportType:
+      type: string
+      enum: [SALLES_B, BU]
+
+    ReportSectionDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, label, kind, required]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        kind:
+          type: string
+          enum: [text, list]
+        required:
+          type: boolean
+
+    ReportTemplate:
+      type: object
+      additionalProperties: false
+      required: [id, type, version, sections]
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ReportType'
+        version:
+          type: integer
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportSectionDefinition'
+
+    IncidentItem:
+      type: object
+      additionalProperties: false
+      required: [description]
+      properties:
+        time:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        description:
+          type: string
+        actionTaken:
+          type: string
+          nullable: true
+
+    ReportMetadata:
+      type: object
+      additionalProperties: false
+      required: [reportDate]
+      properties:
+        reportDate:
+          type: string
+          format: date
+        shiftLabel:
+          type: string
+          nullable: true
+        authorName:
+          type: string
+          nullable: true
+
+    ReportSections:
+      type: object
+      description: Dictionnaire sectionKey -> contenu. Les clés attendues dépendent du template.
+      additionalProperties: true
+
+    Report:
+      type: object
+      additionalProperties: false
+      required: [id, workspaceId, type, templateId, templateVersion, title, createdAt, updatedAt, metadata, sections]
+      properties:
+        id:
+          type: string
+        workspaceId:
+          type: string
+        type:
+          $ref: '#/components/schemas/ReportType'
+        templateId:
+          type: string
+        templateVersion:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        metadata:
+          $ref: '#/components/schemas/ReportMetadata'
+        sections:
+          $ref: '#/components/schemas/ReportSections'
+
+    ReportSummary:
+      type: object
+      additionalProperties: false
+      required: [id, type, title, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ReportType'
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ReportCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [type, metadata, sections]
+      properties:
+        type:
+          $ref: '#/components/schemas/ReportType'
+        title:
+          type: string
+          nullable: true
+        templateId:
+          type: string
+          nullable: true
+        metadata:
+          $ref: '#/components/schemas/ReportMetadata'
+        sections:
+          $ref: '#/components/schemas/ReportSections'
+
+    ReportUpdateRequest:
+      type: object
+      additionalProperties: false
+      required: [metadata, sections]
+      properties:
+        title:
+          type: string
+          nullable: true
+        metadata:
+          $ref: '#/components/schemas/ReportMetadata'
+        sections:
+          $ref: '#/components/schemas/ReportSections'
+
+    RenderedReport:
+      type: object
+      additionalProperties: false
+      required: [reportId, text, sectionsText]
+      properties:
+        reportId:
+          type: string
+        text:
+          type: string
+        sectionsText:
+          type: object
+          additionalProperties:
+            type: string
+
+    EmailPrepareRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+
+    PreparedEmail:
+      type: object
+      additionalProperties: false
+      required: [subject, body]
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        to:
+          type: array
+          items:
+            type: string
+        invalidRecipients:
+          type: array
+          items:
+            type: string

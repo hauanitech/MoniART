@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply text-gray-900 antialiased;
+  }
+  body {
+    @apply bg-gray-50 min-h-screen;
+  }
+  /* Consistent focus rings */
+  input:focus, textarea:focus, select:focus, button:focus-visible {
+    @apply outline-none ring-2 ring-indigo-400 ring-offset-1;
+  }
+}
