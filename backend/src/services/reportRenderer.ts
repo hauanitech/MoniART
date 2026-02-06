@@ -70,11 +70,7 @@ export function renderReport(report: Report): RenderedReport {
   const template = getTemplateByType(report.type);
   const sections = template?.sections || [];
 
-  const typeLabel = report.type === 'SALLES_B' ? 'Salles en B | Salles Informatiques' : 'Service à la BU';
-
   const headerLines: string[] = [
-    `## ${typeLabel}`,
-    '',
     `-Date, heure, et lieu---------------------------------------------------------------------`,
     `* ${report.metadata.reportDate}`,
   ];
