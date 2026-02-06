@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import RoomChecklistEditor from './RoomChecklistEditor';
+import type { RoomConfig, RoomData } from './RoomChecklistEditor';
+import NumberListEditor from './NumberListEditor';
 
 interface SimpleListEditorProps {
   items: string[];
@@ -6,7 +9,7 @@ interface SimpleListEditorProps {
   placeholder?: string;
 }
 
-function SimpleListEditor({ items, onChange, placeholder = 'Ajouter un élément' }: SimpleListEditorProps) {
+function SimpleListEditor({ items, onChange, placeholder = 'Ajouter un element' }: SimpleListEditorProps) {
   const [draft, setDraft] = useState('');
   const add = () => {
     if (draft.trim()) {
@@ -17,22 +20,41 @@ function SimpleListEditor({ items, onChange, placeholder = 'Ajouter un élément
   const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx));
 
   return (
-    <div className="space-y-1">
-      {items.map((item, idx) => (
-        <div key={idx} className="flex items-center gap-2 text-sm">
-          <span className="flex-1">• {item}</span>
-          <button type="button" onClick={() => remove(idx)} className="text-red-400 hover:text-red-600">✕</button>
-        </div>
-      ))}
+    <div className="space-y-2">
+      {items.length > 0 && (
+        <ul className="space-y-1">
+          {items.map((item, idx) => (
+            <li key={idx} className="flex items-center gap-3 text-sm group">
+              <span className="w-1.5 h-1.5 rounded-full bg-surface-400 flex-shrink-0" />
+              <span className="flex-1 text-surface-700">{item}</span>
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                className="opacity-0 group-hover:opacity-100 text-surface-400 hover:text-red-500 transition-opacity p-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="flex gap-2">
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), add())}
           placeholder={placeholder}
-          className="flex-1 border rounded px-2 py-1 text-sm"
+          className="input-field flex-1"
         />
-        <button type="button" onClick={add} className="text-sm text-indigo-600 font-medium">+</button>
+        <button
+          type="button"
+          onClick={add}
+          className="btn-secondary px-3"
+        >
+          Ajouter
+        </button>
       </div>
     </div>
   );
@@ -41,8 +63,10 @@ function SimpleListEditor({ items, onChange, placeholder = 'Ajouter un élément
 interface SectionDef {
   key: string;
   label: string;
-  kind: 'text' | 'list';
+  kind: 'text' | 'list' | 'number' | 'numberList' | 'roomChecklist';
   required: boolean;
+  format?: string;
+  roomConfig?: RoomConfig;
 }
 
 interface Props {
@@ -52,7 +76,6 @@ interface Props {
   metadata: { reportDate: string; shiftLabel: string; authorName: string };
   onMetadataChange: (field: string, value: string) => void;
   reportType: 'SALLES_B' | 'BU';
-  incidentEditor: React.ReactNode;
 }
 
 export default function ReportForm({
@@ -61,69 +84,110 @@ export default function ReportForm({
   onChange,
   metadata,
   onMetadataChange,
-  incidentEditor,
 }: Props) {
+  const renderSectionEditor = (sec: SectionDef) => {
+    switch (sec.kind) {
+      case 'text':
+        return (
+          <textarea
+            value={(values[sec.key] as string) || ''}
+            onChange={(e) => onChange(sec.key, e.target.value)}
+            placeholder={`Saisissez ${sec.label.toLowerCase()}...`}
+            className="input-field min-h-[100px] resize-y"
+          />
+        );
+      case 'number':
+        return (
+          <input
+            type="number"
+            value={(values[sec.key] as number) ?? ''}
+            onChange={(e) => onChange(sec.key, e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="0"
+            className="input-field w-32"
+            min={0}
+          />
+        );
+      case 'numberList':
+        return (
+          <NumberListEditor
+            items={(values[sec.key] as number[]) || []}
+            onChange={(items) => onChange(sec.key, items)}
+            format={sec.format || '{n}'}
+          />
+        );
+      case 'roomChecklist':
+        return sec.roomConfig ? (
+          <RoomChecklistEditor
+            config={sec.roomConfig}
+            value={(values[sec.key] as Record<string, RoomData>) || {}}
+            onChange={(val) => onChange(sec.key, val)}
+          />
+        ) : null;
+      case 'list':
+        return (
+          <SimpleListEditor
+            items={(values[sec.key] as string[]) || []}
+            onChange={(items) => onChange(sec.key, items)}
+            placeholder={`Ajouter - ${sec.label}`}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Metadata */}
-      <fieldset className="bg-white rounded-xl border p-4 space-y-3">
-        <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Métadonnées</legend>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="card p-5">
+        <h2 className="section-title mb-4">Informations generales</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Date du rapport *</label>
+            <label className="block text-sm font-medium text-surface-700 mb-1.5">
+              Date du rapport <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               value={metadata.reportDate}
               onChange={(e) => onMetadataChange('reportDate', e.target.value)}
-              className="w-full border rounded px-2 py-1 text-sm"
+              className="input-field"
               required
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Créneau</label>
+            <label className="block text-sm font-medium text-surface-700 mb-1.5">
+              Creneau horaire
+            </label>
             <input
               value={metadata.shiftLabel}
               onChange={(e) => onMetadataChange('shiftLabel', e.target.value)}
-              placeholder="ex. Matin"
-              className="w-full border rounded px-2 py-1 text-sm"
+              placeholder="ex. 16h30 - 17h30"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Moniteur</label>
+            <label className="block text-sm font-medium text-surface-700 mb-1.5">
+              Moniteur
+            </label>
             <input
               value={metadata.authorName}
               onChange={(e) => onMetadataChange('authorName', e.target.value)}
               placeholder="Nom (optionnel)"
-              className="w-full border rounded px-2 py-1 text-sm"
+              className="input-field"
             />
           </div>
         </div>
-      </fieldset>
+      </div>
 
       {/* Sections */}
       {sections.map((sec) => (
-        <fieldset key={sec.key} className="bg-white rounded-xl border p-4 space-y-2">
-          <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            {sec.label} {sec.required && <span className="text-red-400">*</span>}
-          </legend>
-
-          {sec.key === 'incidents' ? (
-            incidentEditor
-          ) : sec.kind === 'text' ? (
-            <textarea
-              value={(values[sec.key] as string) || ''}
-              onChange={(e) => onChange(sec.key, e.target.value)}
-              placeholder={sec.label}
-              className="w-full border rounded px-2 py-2 text-sm min-h-[80px]"
-            />
-          ) : (
-            <SimpleListEditor
-              items={(values[sec.key] as string[]) || []}
-              onChange={(items) => onChange(sec.key, items)}
-              placeholder={`Ajouter — ${sec.label}`}
-            />
-          )}
-        </fieldset>
+        <div key={sec.key} className="card p-5">
+          <h2 className="section-title mb-4">
+            {sec.label}
+            {sec.required && <span className="text-red-500 ml-1">*</span>}
+          </h2>
+          {renderSectionEditor(sec)}
+        </div>
       ))}
     </div>
   );

@@ -4,7 +4,17 @@ export interface ReportTemplate {
   id: string;
   type: 'SALLES_B' | 'BU';
   version: number;
-  sections: { key: string; label: string; kind: 'text' | 'list'; required: boolean }[];
+  sections: {
+    key: string;
+    label: string;
+    kind: 'text' | 'list' | 'number' | 'numberList' | 'roomChecklist';
+    required: boolean;
+    format?: string;
+    roomConfig?: {
+      rooms: string[];
+      checkItems: { key: string; label: string; inputType?: 'boolean' | 'number' }[];
+    };
+  }[];
 }
 
 export interface Report {

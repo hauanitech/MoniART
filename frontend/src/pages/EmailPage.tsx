@@ -36,7 +36,7 @@ export default function EmailPage() {
         showToast(`Adresses invalides : ${result.invalidRecipients.join(', ')}`, 'error');
       }
     } catch (e: any) {
-      setError(e.message || 'Erreur de préparation');
+      setError(e.message || 'Erreur de preparation');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function EmailPage() {
   const handleOpenMailto = () => {
     if (!prepared) return;
     openMailto(prepared.to || [], prepared.subject, prepared.body);
-    showToast('Client email ouvert !');
+    showToast('Client email ouvert');
   };
 
   // Auto-prepare on mount
@@ -56,25 +56,55 @@ export default function EmailPage() {
   }, [reportId]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-700">Préparer l'email</h1>
-        <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-700">← Retour</button>
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-surface-900">Preparer l'email</h1>
+          <p className="text-sm text-surface-500 mt-1">Configurez les destinataires et envoyez le rapport</p>
+        </div>
+        <button onClick={() => navigate(-1)} className="btn-ghost self-start sm:self-auto">
+          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Retour
+        </button>
       </div>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm flex items-center gap-3">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </div>
+      )}
 
       {/* Recipients */}
-      <fieldset className="bg-white rounded-xl border p-4 space-y-3">
-        <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Destinataires</legend>
-        <div className="flex flex-wrap gap-2">
-          {recipients.map((r) => (
-            <span key={r} className="inline-flex items-center gap-1 bg-indigo-100 text-indigo-700 rounded-full px-3 py-1 text-xs">
-              {r}
-              <button onClick={() => removeRecipient(r)} className="hover:text-red-500">✕</button>
-            </span>
-          ))}
-        </div>
+      <div className="card p-5 space-y-4">
+        <h2 className="section-title">Destinataires</h2>
+        
+        {recipients.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {recipients.map((r) => (
+              <span
+                key={r}
+                className="inline-flex items-center gap-2 bg-primary-50 text-primary-700 rounded-lg px-3 py-1.5 text-sm font-medium"
+              >
+                {r}
+                <button
+                  onClick={() => removeRecipient(r)}
+                  className="opacity-60 hover:opacity-100 hover:text-red-500 transition-opacity"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2">
           <input
             type="email"
@@ -82,34 +112,45 @@ export default function EmailPage() {
             onChange={(e) => setRecipientInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRecipient())}
             placeholder="email@example.com"
-            className="flex-1 border rounded px-2 py-1 text-sm"
+            className="input-field flex-1"
           />
-          <button onClick={addRecipient} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded font-medium hover:bg-indigo-200">
+          <button onClick={addRecipient} className="btn-secondary">
             Ajouter
           </button>
         </div>
+
         {prepared?.invalidRecipients && prepared.invalidRecipients.length > 0 && (
           <p className="text-xs text-red-500">
-            Adresses invalides ignorées : {prepared.invalidRecipients.join(', ')}
+            Adresses invalides ignorees : {prepared.invalidRecipients.join(', ')}
           </p>
         )}
-      </fieldset>
+      </div>
 
       {/* Prepared preview */}
       {prepared && (
-        <fieldset className="bg-white rounded-xl border p-4 space-y-3">
-          <legend className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Aperçu email</legend>
-          <div>
-            <p className="text-xs text-gray-400">Objet</p>
-            <p className="text-sm font-medium text-gray-800">{prepared.subject}</p>
+        <div className="card p-5 space-y-4">
+          <h2 className="section-title">Apercu de l'email</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-surface-400 uppercase tracking-wide mb-1">
+                Objet
+              </label>
+              <p className="text-sm font-medium text-surface-900">{prepared.subject}</p>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-medium text-surface-400 uppercase tracking-wide mb-1">
+                Corps du message
+              </label>
+              <div className="bg-surface-50 rounded-lg border border-surface-200 p-4 max-h-80 overflow-y-auto">
+                <pre className="whitespace-pre-wrap text-sm text-surface-700 font-mono">
+                  {prepared.body}
+                </pre>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-gray-400">Corps</p>
-            <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono mt-1 max-h-60 overflow-y-auto">
-              {prepared.body}
-            </pre>
-          </div>
-        </fieldset>
+        </div>
       )}
 
       {/* Actions */}
@@ -117,16 +158,29 @@ export default function EmailPage() {
         <button
           onClick={handlePrepare}
           disabled={loading}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="btn-secondary"
         >
-          {loading ? 'Préparation…' : '🔄 Préparer l\'email'}
+          {loading ? (
+            <>
+              <svg className="w-4 h-4 mr-2 inline-block animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Preparation...
+            </>
+          ) : (
+            'Actualiser l\'apercu'
+          )}
         </button>
         {prepared && (
           <button
             onClick={handleOpenMailto}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+            className="btn-primary"
           >
-            ✉ Ouvrir le client mail
+            <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Ouvrir le client mail
           </button>
         )}
       </div>
