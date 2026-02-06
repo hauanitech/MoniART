@@ -23,50 +23,60 @@ export default function IncidentListEditor({ items, onChange, locationLabel = 'L
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {items.map((item, idx) => (
-        <div key={idx} className="bg-white border border-gray-200 rounded-lg p-3 space-y-2">
-          <div className="flex gap-2 items-center">
-            <span className="text-xs text-gray-400 font-mono">#{idx + 1}</span>
-            <button type="button" onClick={() => remove(idx)} className="ml-auto text-red-400 hover:text-red-600 text-sm">
-              ✕
+        <div key={idx} className="card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-surface-400 uppercase tracking-wide">
+              Incident {idx + 1}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(idx)}
+              className="text-surface-400 hover:text-red-500 transition-colors p-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
-              placeholder="Heure (opt.)"
+              placeholder="Heure (optionnel)"
               value={item.time}
               onChange={(e) => update(idx, 'time', e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
+              className="input-field"
             />
             <input
-              placeholder={`${locationLabel} (opt.)`}
+              placeholder={`${locationLabel} (optionnel)`}
               value={item.location}
               onChange={(e) => update(idx, 'location', e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
+              className="input-field"
             />
           </div>
           <textarea
             placeholder="Description *"
             value={item.description}
             onChange={(e) => update(idx, 'description', e.target.value)}
-            className="w-full border rounded px-2 py-1 text-sm"
-            rows={2}
+            className="input-field min-h-[80px] resize-y"
           />
           <input
-            placeholder="Action prise (opt.)"
+            placeholder="Action prise (optionnel)"
             value={item.actionTaken}
             onChange={(e) => update(idx, 'actionTaken', e.target.value)}
-            className="w-full border rounded px-2 py-1 text-sm"
+            className="input-field"
           />
         </div>
       ))}
       <button
         type="button"
         onClick={add}
-        className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+        className="btn-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2"
       >
-        + Ajouter un incident
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Ajouter un incident
       </button>
     </div>
   );

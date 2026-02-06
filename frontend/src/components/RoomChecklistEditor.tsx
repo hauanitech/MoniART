@@ -63,7 +63,7 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Room picker */}
       <div className="flex flex-wrap gap-2">
         {config.rooms.map((name) => {
@@ -73,13 +73,18 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
               key={name}
               type="button"
               onClick={() => toggleVisited(name)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium border-2 transition-all duration-200 ${
                 room.visited
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
+                  ? 'bg-primary-600 text-white border-primary-600 shadow-soft'
+                  : 'bg-white text-surface-600 border-surface-200 hover:border-primary-300 hover:text-primary-600'
               }`}
             >
-              {room.visited ? '✓ ' : ''}{name}
+              {room.visited && (
+                <svg className="w-4 h-4 inline-block mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              {name}
             </button>
           );
         })}
@@ -90,30 +95,35 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
         const room = getRoom(name);
         if (!room.visited) return null;
         return (
-          <div key={name} className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
-            <h4 className="text-sm font-semibold text-indigo-700">{name}</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div key={name} className="bg-surface-50 border border-surface-200 rounded-xl p-4 space-y-4">
+            <h4 className="text-sm font-semibold text-primary-700 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary-500" />
+              {name}
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {config.checkItems.map((ci) =>
                 ci.inputType === 'number' ? (
-                  <div key={ci.key} className="flex items-center gap-2 text-sm">
-                    <label className="flex-1 text-gray-600">{ci.label}</label>
+                  <div key={ci.key} className="flex items-center justify-between gap-3 text-sm">
+                    <label className="text-surface-600">{ci.label}</label>
                     <input
                       type="number"
                       min={0}
                       value={(room.checks[ci.key] as number) || 0}
                       onChange={(e) => updateCheckNumber(name, ci.key, Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-16 border rounded px-2 py-1 text-sm text-center"
+                      className="w-20 input-field text-center"
                     />
                   </div>
                 ) : (
-                  <label key={ci.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label key={ci.key} className="flex items-center gap-3 text-sm cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={!!room.checks[ci.key]}
                       onChange={() => toggleCheck(name, ci.key)}
-                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      className="w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                     />
-                    <span className={room.checks[ci.key] ? 'text-red-600 font-medium' : 'text-gray-600'}>
+                    <span className={`transition-colors ${
+                      room.checks[ci.key] ? 'text-red-600 font-medium' : 'text-surface-600 group-hover:text-surface-800'
+                    }`}>
                       {ci.label}
                     </span>
                   </label>
@@ -121,10 +131,10 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
               )}
             </div>
             <input
-              placeholder="Notes supplémentaires…"
+              placeholder="Notes supplementaires..."
               value={room.notes}
               onChange={(e) => updateNotes(name, e.target.value)}
-              className="w-full border rounded px-2 py-1 text-sm"
+              className="input-field"
             />
           </div>
         );

@@ -64,19 +64,26 @@ export default function CreateReportPage() {
 
   if (preview) {
     return (
-      <div className="space-y-4">
-        <div className="flex gap-3 flex-wrap">
-          <button onClick={handleReset} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">
-            ✚ Nouveau rapport
-          </button>
-          <button onClick={() => navigate('/history')} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">
-            📋 Voir l'historique
-          </button>
-          {preview && (
-            <button onClick={() => navigate(`/email/${preview.reportId}`)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
-              ✉ Préparer email
+      <div className="space-y-6">
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold text-surface-900">Rapport genere</h1>
+            <p className="text-sm text-surface-500 mt-1">Votre rapport a ete enregistre avec succes</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={handleReset} className="btn-primary">
+              Nouveau rapport
             </button>
-          )}
+            <button onClick={() => navigate('/history')} className="btn-secondary">
+              Voir l'historique
+            </button>
+            {preview && (
+              <button onClick={() => navigate(`/email/${preview.reportId}`)} className="btn-secondary">
+                Preparer email
+              </button>
+            )}
+          </div>
         </div>
         <ReportPreview text={preview.text} sectionsText={preview.sectionsText} />
       </div>
@@ -84,17 +91,31 @@ export default function CreateReportPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-700">
-          Rapport {selectedType === 'SALLES_B' ? 'Salles en B' : 'BU'}
-        </h1>
-        <button onClick={handleReset} className="text-sm text-gray-500 hover:text-gray-700">
-          ← Changer de type
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-surface-900">
+            Rapport {selectedType === 'SALLES_B' ? 'Salles en B' : 'BU'}
+          </h1>
+          <p className="text-sm text-surface-500 mt-1">Remplissez les informations du rapport</p>
+        </div>
+        <button onClick={handleReset} className="btn-ghost self-start sm:self-auto">
+          <svg className="w-4 h-4 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Changer de type
         </button>
       </div>
 
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm flex items-center gap-3">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </div>
+      )}
 
       {currentTemplate && (
         <ReportForm
@@ -107,13 +128,24 @@ export default function CreateReportPage() {
         />
       )}
 
-      <div className="sticky bottom-0 bg-gray-50 border-t py-3 flex justify-end">
+      {/* Sticky action bar */}
+      <div className="sticky bottom-0 bg-surface-50/95 backdrop-blur-sm border-t border-surface-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 flex justify-end">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="btn-primary"
         >
-          {saving ? 'Enregistrement...' : '💾 Enregistrer & Générer'}
+          {saving ? (
+            <>
+              <svg className="w-4 h-4 mr-2 inline-block animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Enregistrement...
+            </>
+          ) : (
+            'Enregistrer et generer'
+          )}
         </button>
       </div>
     </div>
