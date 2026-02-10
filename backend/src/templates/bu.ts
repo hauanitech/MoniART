@@ -21,7 +21,13 @@ export const buTemplate: ReportTemplate = {
       required: false,
       format: 'BUPF{n}',
     },
-    { key: 'computersProcessed', label: 'Ordinateurs traités', kind: 'text', required: false },
+    {
+      key: 'computersProcessed',
+      label: 'Ordinateurs traités',
+      kind: 'numberList',
+      required: false,
+      format: 'BUPF{n}',
+    },
     {
       key: 'equipmentProcessed',
       label: 'Matériels traités',
