@@ -11,10 +11,10 @@ interface PreparedEmail {
 
 export async function prepareEmail(
   reportId: string,
-  workspaceId: string,
+  userId: string,
   recipients?: string[],
 ): Promise<PreparedEmail> {
-  const report = await getReport(workspaceId, reportId);
+  const report = await getReport(userId, reportId);
   if (!report) {
     throw Object.assign(new Error('Report not found'), { statusCode: 404 });
   }

@@ -6,7 +6,7 @@ import { getTemplateByType } from '../templates/index.js';
 
 interface ReportDoc {
   _id: string;
-  workspaceId: string;
+  userId: string;
   type: ReportType;
   templateId: string;
   templateVersion: number;
@@ -24,7 +24,7 @@ function col(): Collection<ReportDoc> {
 function toReport(doc: ReportDoc): Report {
   return {
     id: doc._id,
-    workspaceId: doc.workspaceId,
+    userId: doc.userId,
     type: doc.type,
     templateId: doc.templateId,
     templateVersion: doc.templateVersion,
@@ -37,7 +37,7 @@ function toReport(doc: ReportDoc): Report {
 }
 
 export async function createReport(
-  workspaceId: string,
+  userId: string,
   type: ReportType,
   title: string,
   metadata: Report['metadata'],
@@ -48,7 +48,7 @@ export async function createReport(
   const now = new Date().toISOString();
   const doc: ReportDoc = {
     _id: uuid(),
-    workspaceId,
+    userId,
     type,
     templateId: templateId || template?.id || `${type.toLowerCase()}@1`,
     templateVersion: template?.version || 1,
@@ -63,10 +63,10 @@ export async function createReport(
 }
 
 export async function listReports(
-  workspaceId: string,
+  userId: string,
   type?: ReportType,
 ): Promise<ReportSummary[]> {
-  const filter: Record<string, unknown> = { workspaceId };
+  const filter: Record<string, unknown> = { userId };
   if (type) filter.type = type;
   const docs = await col()
     .find(filter)
@@ -84,13 +84,39 @@ export async function listReports(
   }));
 }
 
-export async function getReport(workspaceId: string, reportId: string): Promise<Report | null> {
-  const doc = await col().findOne({ _id: reportId, workspaceId });
+export async function listAllReports(
+  type?: ReportType,
+): Promise<ReportSummary[]> {
+  const filter: Record<string, unknown> = {};
+  if (type) filter.type = type;
+  const docs = await col()
+    .find(filter)
+    .sort({ updatedAt: -1 })
+    .project<Pick<ReportDoc, '_id' | 'type' | 'title' | 'createdAt' | 'updatedAt'>>({
+      _id: 1, type: 1, title: 1, createdAt: 1, updatedAt: 1,
+    })
+    .toArray();
+  return docs.map((d) => ({
+    id: d._id,
+    type: d.type,
+    title: d.title,
+    createdAt: d.createdAt,
+    updatedAt: d.updatedAt,
+  }));
+}
+
+export async function getReport(userId: string, reportId: string): Promise<Report | null> {
+  const doc = await col().findOne({ _id: reportId, userId });
+  return doc ? toReport(doc) : null;
+}
+
+export async function getReportById(reportId: string): Promise<Report | null> {
+  const doc = await col().findOne({ _id: reportId });
   return doc ? toReport(doc) : null;
 }
 
 export async function updateReport(
-  workspaceId: string,
+  userId: string,
   reportId: string,
   title: string | undefined,
   metadata: Report['metadata'],
@@ -100,14 +126,14 @@ export async function updateReport(
   const setFields: Record<string, unknown> = { metadata, sections, updatedAt: now };
   if (title !== undefined && title !== null) setFields.title = title;
   const result = await col().findOneAndUpdate(
-    { _id: reportId, workspaceId },
+    { _id: reportId, userId },
     { $set: setFields },
     { returnDocument: 'after' },
   );
   return result ? toReport(result as unknown as ReportDoc) : null;
 }
 
-export async function deleteReport(workspaceId: string, reportId: string): Promise<boolean> {
-  const result = await col().deleteOne({ _id: reportId, workspaceId });
+export async function deleteReport(userId: string, reportId: string): Promise<boolean> {
+  const result = await col().deleteOne({ _id: reportId, userId });
   return result.deletedCount === 1;
 }

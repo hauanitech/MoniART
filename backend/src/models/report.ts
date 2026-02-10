@@ -47,7 +47,7 @@ export interface ReportMetadata {
 
 export interface Report {
   id: string;
-  workspaceId: string;
+  userId: string;
   type: ReportType;
   templateId: string;
   templateVersion: number;
