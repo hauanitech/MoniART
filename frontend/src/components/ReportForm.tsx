@@ -3,6 +3,28 @@ import RoomChecklistEditor from './RoomChecklistEditor';
 import type { RoomConfig, RoomData } from './RoomChecklistEditor';
 import NumberListEditor from './NumberListEditor';
 
+// Générer les créneaux de 30 min entre 7h30 et 18h00
+function generateTimeSlots(): string[] {
+  const slots: string[] = [];
+  let hour = 7;
+  let minute = 30;
+  
+  while (hour < 18 || (hour === 18 && minute === 0)) {
+    const h = hour.toString().padStart(2, '0');
+    const m = minute.toString().padStart(2, '0');
+    slots.push(`${h}h${m}`);
+    
+    minute += 30;
+    if (minute >= 60) {
+      minute = 0;
+      hour += 1;
+    }
+  }
+  return slots;
+}
+
+const TIME_SLOTS = generateTimeSlots();
+
 interface SimpleListEditorProps {
   items: string[];
   onChange: (items: string[]) => void;
@@ -56,6 +78,79 @@ function SimpleListEditor({ items, onChange, placeholder = 'Ajouter un element' 
           Ajouter
         </button>
       </div>
+    </div>
+  );
+}
+
+interface TimeSlotPickerProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function TimeSlotPicker({ value, onChange }: TimeSlotPickerProps) {
+  // Parse existing value like "07h30 - 08h00" into start and end
+  const parseValue = (val: string): { start: string; end: string } => {
+    if (!val) return { start: '', end: '' };
+    const parts = val.split(' - ');
+    return { start: parts[0] || '', end: parts[1] || '' };
+  };
+
+  const { start, end } = parseValue(value);
+
+  const handleChange = (field: 'start' | 'end', newVal: string) => {
+    const current = parseValue(value);
+    if (field === 'start') {
+      if (newVal && current.end) {
+        onChange(`${newVal} - ${current.end}`);
+      } else if (newVal) {
+        onChange(newVal);
+      } else {
+        onChange('');
+      }
+    } else {
+      if (current.start && newVal) {
+        onChange(`${current.start} - ${newVal}`);
+      } else if (current.start) {
+        onChange(current.start);
+      } else {
+        onChange('');
+      }
+    }
+  };
+
+  // Filtrer les heures de fin pour qu'elles soient après l'heure de début
+  const endSlots = start
+    ? TIME_SLOTS.filter((slot) => slot > start)
+    : TIME_SLOTS;
+
+  return (
+    <div className="flex items-center gap-2">
+      <select
+        value={start}
+        onChange={(e) => handleChange('start', e.target.value)}
+        className="input-field flex-1"
+      >
+        <option value="">Début</option>
+        {TIME_SLOTS.map((slot) => (
+          <option key={slot} value={slot}>
+            {slot}
+          </option>
+        ))}
+      </select>
+      <span className="text-surface-500">-</span>
+      <select
+        value={end}
+        onChange={(e) => handleChange('end', e.target.value)}
+        className="input-field flex-1"
+        disabled={!start}
+      >
+        <option value="">Fin</option>
+        {endSlots.map((slot) => (
+          <option key={slot} value={slot}>
+            {slot}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -156,13 +251,11 @@ export default function ReportForm({
           </div>
           <div>
             <label className="block text-sm font-medium text-surface-700 mb-1.5">
-              Creneau horaire
+              Créneau horaire
             </label>
-            <input
+            <TimeSlotPicker
               value={metadata.shiftLabel}
-              onChange={(e) => onMetadataChange('shiftLabel', e.target.value)}
-              placeholder="ex. 16h30 - 17h30"
-              className="input-field"
+              onChange={(val) => onMetadataChange('shiftLabel', val)}
             />
           </div>
           <div>

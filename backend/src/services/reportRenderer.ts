@@ -2,6 +2,24 @@ import { Report, RenderedReport, RoomData } from '../models/report.js';
 import { getTemplateByType } from '../templates/index.js';
 import { ReportSectionDefinition } from '../models/report.js';
 
+const DAYS_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const MONTHS_FR = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+];
+
+function formatDateFrench(dateStr: string): string {
+  const date = new Date(dateStr + 'T12:00:00');
+  if (isNaN(date.getTime())) return dateStr;
+  
+  const dayName = DAYS_FR[date.getDay()];
+  const dayNum = date.getDate();
+  const monthName = MONTHS_FR[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${dayName} ${dayNum} ${monthName} ${year}`;
+}
+
 function formatNumberList(items: number[], format: string): string {
   if (!items || items.length === 0) return '';
   return items.map((n) => `- ${format.replace('{n}', String(n))}`).join('\n');
@@ -72,7 +90,7 @@ export function renderReport(report: Report): RenderedReport {
 
   const headerLines: string[] = [
     `-Date, heure, et lieu---------------------------------------------------------------------`,
-    `* ${report.metadata.reportDate}`,
+    `* ${formatDateFrench(report.metadata.reportDate)}`,
   ];
   if (report.metadata.shiftLabel) headerLines.push(`* ${report.metadata.shiftLabel}`);
   if (report.type === 'SALLES_B') {
