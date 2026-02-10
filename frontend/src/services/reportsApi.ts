@@ -19,7 +19,7 @@ export interface ReportTemplate {
 
 export interface Report {
   id: string;
-  workspaceId: string;
+  userId: string;
   type: 'SALLES_B' | 'BU';
   templateId: string;
   templateVersion: number;

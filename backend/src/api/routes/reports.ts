@@ -1,5 +1,5 @@
-import { Router, Request, Response } from 'express';
-import { getWorkspaceId } from '../middleware/workspace.js';
+import { Router, Response } from 'express';
+import { AuthRequest, getUserId } from '../middleware/auth.js';
 import {
   createReport,
   listReports,
@@ -12,20 +12,20 @@ import { isValidReportType, ReportType } from '../../models/report.js';
 const router = Router();
 
 // LIST
-router.get('/', async (req: Request, res: Response) => {
-  const wsId = getWorkspaceId(req);
+router.get('/', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
   const typeFilter = req.query.type as string | undefined;
   if (typeFilter && !isValidReportType(typeFilter)) {
     res.status(400).json({ error: 'Invalid type filter' });
     return;
   }
-  const reports = await listReports(wsId, typeFilter as ReportType | undefined);
+  const reports = await listReports(userId, typeFilter as ReportType | undefined);
   res.json(reports);
 });
 
 // CREATE
-router.post('/', async (req: Request, res: Response) => {
-  const wsId = getWorkspaceId(req);
+router.post('/', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
   const { type, title, templateId, metadata, sections } = req.body;
   if (!isValidReportType(type)) {
     res.status(400).json({ error: 'Invalid or missing type (SALLES_B | BU)' });
@@ -35,14 +35,14 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'metadata.reportDate is required' });
     return;
   }
-  const report = await createReport(wsId, type, title, metadata, sections || {}, templateId);
+  const report = await createReport(userId, type, title, metadata, sections || {}, templateId);
   res.status(201).json(report);
 });
 
 // GET ONE
-router.get('/:reportId', async (req: Request, res: Response) => {
-  const wsId = getWorkspaceId(req);
-  const report = await getReport(wsId, req.params.reportId);
+router.get('/:reportId', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const report = await getReport(userId, req.params.reportId);
   if (!report) {
     res.status(404).json({ error: 'Report not found' });
     return;
@@ -51,14 +51,14 @@ router.get('/:reportId', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-router.put('/:reportId', async (req: Request, res: Response) => {
-  const wsId = getWorkspaceId(req);
+router.put('/:reportId', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
   const { title, metadata, sections } = req.body;
   if (!metadata || !metadata.reportDate) {
     res.status(400).json({ error: 'metadata.reportDate is required' });
     return;
   }
-  const report = await updateReport(wsId, req.params.reportId, title, metadata, sections || {});
+  const report = await updateReport(userId, req.params.reportId, title, metadata, sections || {});
   if (!report) {
     res.status(404).json({ error: 'Report not found' });
     return;
@@ -67,9 +67,9 @@ router.put('/:reportId', async (req: Request, res: Response) => {
 });
 
 // DELETE
-router.delete('/:reportId', async (req: Request, res: Response) => {
-  const wsId = getWorkspaceId(req);
-  const deleted = await deleteReport(wsId, req.params.reportId);
+router.delete('/:reportId', async (req: AuthRequest, res: Response) => {
+  const userId = getUserId(req);
+  const deleted = await deleteReport(userId, req.params.reportId);
   if (!deleted) {
     res.status(404).json({ error: 'Report not found' });
     return;
