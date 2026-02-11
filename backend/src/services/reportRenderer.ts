@@ -32,8 +32,8 @@ function renderRoomChecklist(roomsData: Record<string, RoomData>, sec: ReportSec
   const lines: string[] = [];
   for (const roomName of config.rooms) {
     const room = roomsData?.[roomName];
+    // Skip rooms that are not visited (not checked)
     if (!room?.visited) {
-      lines.push(`- ${roomName} : `);
       continue;
     }
     // Collect issues found
