@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import RoomChecklistEditor from './RoomChecklistEditor';
 import type { RoomConfig, RoomData } from './RoomChecklistEditor';
+import type { RoomAvailabilityInfo } from './RoomChecklistEditor';
 import NumberListEditor from './NumberListEditor';
+import { fetchRoomAvailability } from '../services/roomsApi';
 
 // Générer les créneaux de 30 min entre 7h30 et 18h00
 function generateTimeSlots(): string[] {
@@ -180,6 +182,17 @@ export default function ReportForm({
   metadata,
   onMetadataChange,
 }: Props) {
+  const [roomAvailability, setRoomAvailability] = useState<RoomAvailabilityInfo[]>([]);
+
+  // Fetch room availability if any section uses roomChecklist
+  const hasRoomSection = sections.some((s) => s.kind === 'roomChecklist');
+  useEffect(() => {
+    if (!hasRoomSection) return;
+    fetchRoomAvailability()
+      .then((data) => setRoomAvailability(data))
+      .catch(() => { /* silently ignore — badges just won't show */ });
+  }, [hasRoomSection]);
+
   const renderSectionEditor = (sec: SectionDef) => {
     switch (sec.kind) {
       case 'text':
@@ -216,6 +229,7 @@ export default function ReportForm({
             config={sec.roomConfig}
             value={(values[sec.key] as Record<string, RoomData>) || {}}
             onChange={(val) => onChange(sec.key, val)}
+            availability={roomAvailability}
           />
         ) : null;
       case 'list':

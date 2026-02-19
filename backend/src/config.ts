@@ -6,4 +6,6 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || 'change-this-secret-in-production',
   adminName: process.env.ADMIN_NAME || '',
   adminPassword: process.env.ADMIN_PASSWORD || '',
+  icsBaseUrl: process.env.ICS_BASE_URL || 'https://ics.ent.upf.pf/ics/ics_salle.php',
+  icsCacheTtlMs: parseInt(process.env.ICS_CACHE_TTL_MS || '300000', 10), // 5 min
 };

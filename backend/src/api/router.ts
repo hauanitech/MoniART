@@ -6,6 +6,7 @@ import reportsRenderRouter from './routes/reportsRender.js';
 import emailRouter from './routes/email.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
+import roomsRouter from './routes/rooms.js';
 
 const apiRouter = Router();
 
@@ -17,6 +18,7 @@ apiRouter.use('/templates', authMiddleware, requirePasswordChanged, templatesRou
 apiRouter.use('/reports', authMiddleware, requirePasswordChanged, reportsRouter);
 apiRouter.use('/reports', authMiddleware, requirePasswordChanged, reportsRenderRouter);
 apiRouter.use('/reports', authMiddleware, requirePasswordChanged, emailRouter);
+apiRouter.use('/rooms', authMiddleware, requirePasswordChanged, roomsRouter);
 
 // Routes admin (nécessitent authentification + rôle admin)
 apiRouter.use('/admin', adminRouter);

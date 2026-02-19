@@ -15,10 +15,18 @@ interface RoomData {
   notes: string;
 }
 
+export interface RoomAvailabilityInfo {
+  room: string;
+  status: 'free' | 'occupied' | 'unknown';
+  currentEvent?: string;
+  nextFree?: { start: string; end: string };
+}
+
 interface Props {
   config: RoomConfig;
   value: Record<string, RoomData>;
   onChange: (value: Record<string, RoomData>) => void;
+  availability?: RoomAvailabilityInfo[];
 }
 
 const emptyRoom = (config: RoomConfig): RoomData => ({
@@ -27,7 +35,9 @@ const emptyRoom = (config: RoomConfig): RoomData => ({
   notes: '',
 });
 
-export default function RoomChecklistEditor({ config, value, onChange }: Props) {
+export default function RoomChecklistEditor({ config, value, onChange, availability }: Props) {
+  const getAvailability = (name: string): RoomAvailabilityInfo | undefined =>
+    availability?.find((a) => a.room === name);
   const getRoom = (name: string): RoomData => value[name] || emptyRoom(config);
 
   const toggleVisited = (name: string) => {
@@ -68,11 +78,21 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
       <div className="flex flex-wrap gap-2">
         {config.rooms.map((name) => {
           const room = getRoom(name);
+          const avail = getAvailability(name);
           return (
             <button
               key={name}
               type="button"
               onClick={() => toggleVisited(name)}
+              title={
+                avail
+                  ? avail.status === 'free'
+                    ? `${name} — Libre`
+                    : avail.status === 'occupied'
+                      ? `${name} — Occupée${avail.currentEvent ? ` (${avail.currentEvent})` : ''}${avail.nextFree ? ` · Libre à ${avail.nextFree.start}` : ''}`
+                      : `${name} — Disponibilité inconnue`
+                  : undefined
+              }
               className={`px-4 py-2.5 rounded-lg text-sm font-medium border-2 transition-all duration-200 ${
                 room.visited
                   ? 'bg-primary-600 text-white border-primary-600 shadow-soft'
@@ -85,6 +105,17 @@ export default function RoomChecklistEditor({ config, value, onChange }: Props) 
                 </svg>
               )}
               {name}
+              {avail && (
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ml-2 -mt-0.5 ${
+                    avail.status === 'free'
+                      ? 'bg-green-400'
+                      : avail.status === 'occupied'
+                        ? 'bg-red-400'
+                        : 'bg-surface-300'
+                  }`}
+                />
+              )}
             </button>
           );
         })}

@@ -9,6 +9,7 @@ import HistoryPage from './pages/HistoryPage';
 import EditReportPage from './pages/EditReportPage';
 import EmailPage from './pages/EmailPage';
 import AdminPage from './pages/AdminPage';
+import RoomsPage from './pages/RoomsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, mustChangePassword } = useAuth();
@@ -107,6 +108,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <EmailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rooms"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RoomsPage />
             </Layout>
           </ProtectedRoute>
         }

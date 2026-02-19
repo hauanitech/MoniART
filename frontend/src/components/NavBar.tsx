@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const links = [
   { to: '/create', label: 'Nouveau rapport' },
   { to: '/history', label: 'Historique' },
+  { to: '/rooms', label: 'Salles' },
 ];
 
 export default function NavBar() {
