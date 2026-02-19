@@ -250,7 +250,7 @@ export default function ReportForm({
       {/* Metadata */}
       <div className="card p-5">
         <h2 className="section-title mb-4">Informations generales</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-surface-700 mb-1.5">
               Date du rapport <span className="text-red-500">*</span>
@@ -270,17 +270,6 @@ export default function ReportForm({
             <TimeSlotPicker
               value={metadata.shiftLabel}
               onChange={(val) => onMetadataChange('shiftLabel', val)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-surface-700 mb-1.5">
-              Moniteur
-            </label>
-            <input
-              value={metadata.authorName}
-              onChange={(e) => onMetadataChange('authorName', e.target.value)}
-              placeholder="Nom (optionnel)"
-              className="input-field"
             />
           </div>
         </div>

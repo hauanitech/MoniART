@@ -25,7 +25,6 @@ export interface RoomAvailability {
 // Maps template room names to ICS calendar IDs from ics.ent.upf.pf
 
 const ROOM_ICS_MAP: Record<string, string | null> = {
-  'B2-1': null,        // No known ICS ID
   'B2-2': 'sal-2190',  // B2-2-TP in ICS
   'B2-3': 'sal-2192',  // B2-3-TP in ICS
   'B2-4': 'sal-2191',  // B2-4-TP in ICS

@@ -6,7 +6,7 @@ const options = [
   {
     type: 'SALLES_B' as const,
     label: 'Salles en B',
-    description: 'Rapport pour les salles en sous-sol',
+    description: 'Rapport pour les salles du Bat B',
   },
   {
     type: 'BU' as const,
