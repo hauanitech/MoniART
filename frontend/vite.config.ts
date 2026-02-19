@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'MoniART - Rapports Moniteur',
         short_name: 'MoniART',
         description: 'Application de gestion des rapports moniteur',
-        theme_color: '#4347e6',
+        theme_color: '#2563eb',
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'portrait',

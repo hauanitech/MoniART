@@ -46,9 +46,7 @@ export default function ChangePasswordPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">M</span>
-            </div>
+            <img src="/icons/logo.png" alt="MoniART" className="w-12 h-12 rounded-xl" />
             <span className="font-semibold text-2xl text-surface-900 tracking-tight">
               MoniART
             </span>
