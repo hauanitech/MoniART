@@ -9,12 +9,15 @@ export interface AuthRequest extends Request {
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Support token via query param for SSE (EventSource can't set headers)
+  const queryToken = req.query.token as string | undefined;
+
+  if (!authHeader?.startsWith('Bearer ') && !queryToken) {
     res.status(401).json({ error: 'Token d\'authentification manquant' });
     return;
   }
 
-  const token = authHeader.substring(7);
+  const token = authHeader ? authHeader.substring(7) : queryToken!;
   const payload = verifyToken(token);
 
   if (!payload) {

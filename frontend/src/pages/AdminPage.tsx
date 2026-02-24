@@ -11,14 +11,17 @@ import {
   type CreateUserRequest,
 } from '../services/adminApi';
 import type { ReportSummary } from '../services/reportsApi';
+import { listAdminTimeblocks, deleteAdminTimeblock } from '../services/calendarApi';
+import type { Timeblock } from '../types/calendar';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-type Tab = 'users' | 'reports';
+type Tab = 'users' | 'reports' | 'timeblocks';
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('users');
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [reports, setReports] = useState<ReportSummary[]>([]);
+  const [timeblocks, setTimeblocks] = useState<Timeblock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -36,6 +39,7 @@ export default function AdminPage() {
 
   // Confirm dialog
   const [confirmDelete, setConfirmDelete] = useState<UserSummary | null>(null);
+  const [confirmDeleteTb, setConfirmDeleteTb] = useState<Timeblock | null>(null);
 
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -52,12 +56,14 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      const [usersData, reportsData] = await Promise.all([
+      const [usersData, reportsData, timeblocksData] = await Promise.all([
         listUsers(),
         listAllReports(),
+        listAdminTimeblocks(),
       ]);
       setUsers(usersData);
       setReports(reportsData);
+      setTimeblocks(timeblocksData);
     } catch (err: any) {
       setError(err.message || 'Erreur de chargement');
     } finally {
@@ -123,6 +129,16 @@ export default function AdminPage() {
     setConfirmDelete(null);
   }
 
+  async function handleDeleteTimeblock(tb: Timeblock) {
+    try {
+      await deleteAdminTimeblock(tb.id);
+      setTimeblocks(prev => prev.filter(t => t.id !== tb.id));
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la suppression du créneau');
+    }
+    setConfirmDeleteTb(null);
+  }
+
   async function handleResetPassword(user: UserSummary) {
     try {
       const response = await resetPassword(user.id);
@@ -171,6 +187,16 @@ export default function AdminPage() {
           }`}
         >
           Rapports ({reports.length})
+        </button>
+        <button
+          onClick={() => setTab('timeblocks')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            tab === 'timeblocks'
+              ? 'bg-primary-600 text-white'
+              : 'bg-surface-100 text-surface-700 hover:bg-surface-200'
+          }`}
+        >
+          Créneaux ({timeblocks.length})
         </button>
       </div>
 
@@ -316,6 +342,59 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Timeblocks Tab */}
+      {tab === 'timeblocks' && (
+        <div>
+          <h2 className="text-lg font-semibold text-surface-800 mb-4">Tous les créneaux</h2>
+
+          {timeblocks.length === 0 ? (
+            <p className="text-surface-500 text-center py-8">Aucun créneau</p>
+          ) : (
+            <div className="bg-white rounded-xl border border-surface-200 overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-surface-50 border-b border-surface-200">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-surface-700">Moniteur</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-surface-700">Date</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-surface-700">Horaire</th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-surface-700">Lieu</th>
+                    <th className="text-right px-4 py-3 text-sm font-semibold text-surface-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeblocks.map((tb) => (
+                    <tr key={tb.id} className="border-b border-surface-100 last:border-0">
+                      <td className="px-4 py-3 font-medium text-surface-900">{tb.userName}</td>
+                      <td className="px-4 py-3 text-sm text-surface-600">
+                        {new Date(tb.date + 'T00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-surface-600">
+                        {tb.startTime} – {tb.endTime}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          tb.location === 'B2-1' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'
+                        }`}>
+                          {tb.location}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setConfirmDeleteTb(tb)}
+                          className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                        >
+                          Supprimer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* User Form Modal */}
       {showUserForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -405,6 +484,16 @@ export default function AdminPage() {
           confirmLabel="Supprimer"
           onConfirm={() => handleDelete(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {confirmDeleteTb && (
+        <ConfirmDialog
+          title="Supprimer le créneau"
+          message={`Supprimer le créneau de ${confirmDeleteTb.userName} le ${confirmDeleteTb.date} (${confirmDeleteTb.startTime} – ${confirmDeleteTb.endTime}) ?`}
+          confirmLabel="Supprimer"
+          onConfirm={() => handleDeleteTimeblock(confirmDeleteTb)}
+          onCancel={() => setConfirmDeleteTb(null)}
         />
       )}
     </div>
