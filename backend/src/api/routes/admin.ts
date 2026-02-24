@@ -10,6 +10,8 @@ import {
   countAdmins,
 } from '../../services/userRepository.js';
 import { listAllReports } from '../../services/reportRepository.js';
+import { deleteTimeblocksByUserId } from '../../services/timeblockRepository.js';
+import { broadcast } from '../../services/sse.js';
 import { CreateUserRequest, UpdateUserRequest, isValidUserRole } from '../../models/user.js';
 import { generateTemporaryPassword } from '../../services/authService.js';
 
@@ -154,6 +156,12 @@ adminRouter.delete('/users/:userId', async (req: AuthRequest, res: Response) => 
         res.status(400).json({ error: 'Impossible de supprimer le dernier administrateur' });
         return;
       }
+    }
+
+    // Cascade : supprimer les timeblocks de l'utilisateur
+    const deletedIds = await deleteTimeblocksByUserId(userId);
+    for (const tbId of deletedIds) {
+      broadcast('timeblock_deleted', { id: tbId });
     }
 
     const deleted = await deleteUser(userId);

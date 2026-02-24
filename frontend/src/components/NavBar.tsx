@@ -6,6 +6,7 @@ const links = [
   { to: '/create', label: 'Nouveau rapport' },
   { to: '/history', label: 'Historique' },
   { to: '/rooms', label: 'Salles' },
+  { to: '/planning', label: 'Planning' },
 ];
 
 export default function NavBar() {

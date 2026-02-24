@@ -1,6 +1,132 @@
+/* react-big-calendar default stylesheet — must precede @tailwind */
+@import 'react-big-calendar/lib/css/react-big-calendar.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── react-big-calendar — base tweaks ────────────────────────────────────── */
+.rbc-calendar {
+  font-family: inherit;
+}
+
+.rbc-toolbar {
+  /* hide the built-in RBC toolbar; we use our own CalendarToolbar */
+  display: none;
+}
+
+.rbc-time-slot {
+  min-height: 28px;
+}
+
+.rbc-event {
+  padding: 2px 4px !important;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.rbc-today {
+  background-color: #eef2ff !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: #4f46e5;
+  height: 2px;
+}
+
+.rbc-header {
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rbc-time-gutter .rbc-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  padding-right: 8px;
+}
+
+.rbc-month-view .rbc-date-cell > a,
+.rbc-month-view .rbc-date-cell > button {
+  font-size: 0.75rem;
+}
+
+/* ── Touch scrolling for time grid ───────────────────────────────────────── */
+.rbc-time-content {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent only horizontal bleed — never collapse height */
+.rbc-calendar {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* ── Mobile overrides (≤ 640 px) ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .rbc-calendar {
+    font-size: 0.68rem;
+  }
+
+  .rbc-time-slot {
+    min-height: 22px;
+  }
+
+  .rbc-header {
+    padding: 3px 1px;
+    font-size: 0.58rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+  }
+
+  .rbc-time-gutter .rbc-label {
+    font-size: 0.56rem;
+    padding-right: 3px;
+    padding-left: 2px;
+  }
+
+  .rbc-time-header-gutter,
+  .rbc-time-gutter {
+    min-width: 34px !important;
+    width: 34px !important;
+    max-width: 34px !important;
+  }
+
+  .rbc-event {
+    padding: 1px 2px !important;
+    font-size: 0.58rem !important;
+    border-radius: 3px !important;
+  }
+
+  .rbc-allday-cell {
+    display: none;
+  }
+
+  .rbc-time-header .rbc-allday-cell + .rbc-row-segment {
+    display: none;
+  }
+
+  .rbc-month-view .rbc-date-cell {
+    padding: 2px 3px;
+    font-size: 0.65rem;
+  }
+
+  .rbc-month-view .rbc-event {
+    font-size: 0.55rem !important;
+    padding: 0 2px !important;
+  }
+
+  .rbc-time-header {
+    border-right: 0;
+  }
+
+  .rbc-show-more {
+    font-size: 0.55rem;
+  }
+}
 
 @layer base {
   html {
